@@ -14,3 +14,6 @@ dependencies:
 
   async: 2.11.0
   bloc: 8.1.4
+
+dev_dependencies:
+  bloc_test: 9.1.7
