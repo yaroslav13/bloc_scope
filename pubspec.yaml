@@ -3,7 +3,7 @@ description: The [bloc_scope] package helps you to easily cancel the futures and
 repository: https://github.com/yaroslav13/bloc_scope
 issue_tracker: https://github.com/yaroslav13/bloc_scope/issues
 
-version: 1.0.3
+version: 1.0.4
 
 environment:
   sdk: ^3.6.0

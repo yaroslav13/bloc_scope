@@ -1,3 +1,6 @@
+## [1.0.4]
+* update documentation
+
 ## [1.0.3]
 * remove `flutter` from dependencies
 
