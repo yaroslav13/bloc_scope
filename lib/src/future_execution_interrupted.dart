@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:meta/meta.dart';
 
 /// An exception that is thrown when a function execution is interrupted.
 @immutable
