@@ -1,0 +1,19 @@
+name: bloc_scope
+description: The [bloc_scope] package helps you to easily cancel the futures and streams in case of BLOC or Cubit disposing.
+repository: https://github.com/yaroslav13/bloc_scope
+issue_tracker: https://github.com/yaroslav13/bloc_scope/issues
+
+version: 1.0.0
+
+environment:
+  sdk: ^3.6.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  async: ^2.13.0
+  bloc: ^9.0.0
+
+dev_dependencies:
+  bloc_test: ^10.0.0
