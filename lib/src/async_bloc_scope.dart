@@ -2,19 +2,23 @@ import 'dart:async';
 
 import 'package:async/async.dart';
 import 'package:bloc/bloc.dart';
-import 'package:bloc_scope/src/auto_cancelable_stream.dart';
-import 'package:bloc_scope/src/function_execution_interrupted.dart';
+import 'package:bloc_scope/bloc_scope.dart';
+import 'package:bloc_scope/src/future_execution_interrupted.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 
-part 'function_execution_result.dart';
+part 'operation_execution_result.dart';
+part 'subscription_hook_stream.dart';
+
+/// An interface of stream that produces auto-cancelable subscriptions.
+typedef AutoCancelableStream<T> = _SubscriptionHookStream<T>;
 
 /// A mixin that provides safe asynchronous operations for [BlocBase].
 mixin AsyncBlocScope<State> on BlocBase<State> {
   final Set<StreamSubscription<dynamic>> _subscriptions = {};
   final Set<CancelableOperation<dynamic>> _cancelableOperations = {};
 
-  /// [silentAutoCancelableFunction] or [autoCancelableFunction] runs safely
+  /// [silentAutoCancelableFuture] or [autoCancelableFuture] runs safely
   /// in a zone that catches unhandled errors.
   /// This method is called when an unhandled error is caught.
   /// ignore: no-empty-block
@@ -22,7 +26,8 @@ mixin AsyncBlocScope<State> on BlocBase<State> {
   void onUnhandledError(Object error, StackTrace stackTrace) {}
 
   /// This method crates a [AutoCancelableStream] based on the provided [stream]
-  /// The [AutoCancelableStream] gives you the ability to listen to the stream.
+  /// The [AutoCancelableStream] is a wrapper around a [Stream] that produces
+  /// auto-cancelable subscriptions.
   ///
   /// When you call [AutoCancelableStream.listen], the subscription is created
   /// and added to the [AsyncBlocScope] subscriptions.
@@ -35,7 +40,7 @@ mixin AsyncBlocScope<State> on BlocBase<State> {
   AutoCancelableStream<S> autoCancelableStream<S>(
     Stream<S> stream,
   ) {
-    return AutoCancelableStream<S>(
+    return _SubscriptionHookStream<S>(
       stream,
       onSubscriptionCreated: _subscriptions.add,
     );
@@ -47,28 +52,25 @@ mixin AsyncBlocScope<State> on BlocBase<State> {
   ///
   /// The future continues to take a place in the memory till it completes.
   @protected
-  Future<T> silentAutoCancelableFunction<T>(
+  Future<T> silentAutoCancelableFuture<T>(
     Future<T> Function() function,
   ) async {
-    return _executeAutoCancelableFunction(
+    return _executeAutoCancelableFuture(
       function,
       ignoreCanceledFuture: true,
     );
   }
 
   /// Launch a future that would be canceled in case of bloc closing.
-  /// If the future is canceled, the [FunctionExecutionInterrupted] exception
+  /// If the future is canceled, the [FutureExecutionInterrupted] exception
   /// is thrown.
   ///
   /// You can catch this exception and handle it as needed.
   @protected
-  Future<T> autoCancelableFunction<T>(
+  Future<T> autoCancelableFuture<T>(
     Future<T> Function() function,
   ) async {
-    return _executeAutoCancelableFunction(
-      function,
-      ignoreCanceledFuture: false,
-    );
+    return _executeAutoCancelableFuture(function);
   }
 
   /// Close all subscriptions and cancel all cancelable operations.
@@ -88,11 +90,11 @@ mixin AsyncBlocScope<State> on BlocBase<State> {
     await super.close();
   }
 
-  Future<T> _executeAutoCancelableFunction<T>(
+  Future<T> _executeAutoCancelableFuture<T>(
     Future<T> Function() function, {
     bool ignoreCanceledFuture = false,
   }) async {
-    final completer = CancelableCompleter<_FunctionExecutionResult>();
+    final completer = CancelableCompleter<_OperationExecutionResult>();
 
     final completerCancelableOperation = completer.operation;
     _cancelableOperations.add(completerCancelableOperation);
@@ -115,7 +117,7 @@ mixin AsyncBlocScope<State> on BlocBase<State> {
         : await completerCancelableOperation.valueOrCancellation();
 
     if (result == null) {
-      throw const FunctionExecutionInterrupted();
+      throw const FutureExecutionInterrupted();
     }
 
     return switch (result) {
