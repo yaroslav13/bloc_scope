@@ -5,11 +5,9 @@ It introduces utilities for managing asynchronous operations and subscriptions w
 
 ## Features
 
-- **Auto-Cancelable Future**: Create async functions that are automatically canceled when the associated `Bloc` is closed. If the future is canceled, it throws an exception.
-
-- **Auto-Cancelable Stream**: Create streams that produces subscriptions that are automatically canceled when the associated `Bloc` is closed.
-
-- **Silent Auto-Cancelable Future**: Create async functions that are automatically canceled when the associated `Bloc` is closed. If the future is canceled, it does not complete, and no exception is thrown.
+- **Auto-Cancelable Future**: Ensures asynchronous functions are automatically canceled when the associated `Bloc` is closed. If canceled, the future throws an exception to indicate termination.
+- **Auto-Cancelable Stream**: Create a stream that produces subscriptions that automatically unsubscribe when the associated `Bloc` is closed, preventing memory leaks.
+- **Silent Auto-Cancelable Future**: Similar to an auto-cancelable future but without propagating exceptions upon cancellation—allowing for graceful termination without disrupting execution flow.
 
 ## Usage
 
@@ -46,7 +44,7 @@ Future<void> onBound() async {
 }
 ```
 
-**Note:** In case of `silentAutoCancelableFuture` future will be completed in case of cancellation but the result will be ignored.
+**Note:** When using `silentAutoCancelableFuture`, if the future is canceled, it completes without returning a result, and no exception is thrown. So it's ignored.
 
 ### Auto-Cancelable Subscriptions
 
@@ -58,5 +56,6 @@ final subscriptionController = autoCancelableStream(
 
 ### Error Handling
 
-Error handling using local zone is available when using `autoCancelableFuture` / `silentAutoCancelableFuture`.
-Override the `onUnhandledError` method to handle unhandled errors related to auto-cancelable functions.
+- If an **unhandled exception occurs inside an unawaited future** within `autoCancelableFuture` or `silentAutoCancelableFuture`, it will be **caught by `onUnhandledError` callback**.
+- Override the `onUnhandledError` method to manage unhandled exceptions.
+
