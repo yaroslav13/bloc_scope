@@ -7,7 +7,7 @@ It introduces utilities for managing asynchronous operations and subscriptions w
 
 - **Auto-Cancelable Future**: Ensures asynchronous functions are automatically canceled when the associated `Bloc` is closed. If canceled, the future throws an exception to indicate termination.
 - **Auto-Cancelable Stream**: Create a stream that produces subscriptions that automatically unsubscribe when the associated `Bloc` is closed, preventing memory leaks.
-- **Silent Auto-Cancelable Future**: Similar to an auto-cancelable future but without propagating exceptions upon cancellation—allowing for graceful termination without disrupting execution flow.
+- **Silent Auto-Cancelable Future**: Similar to an auto-cancelable future but ignores the result and does not propagate exceptions upon cancellation.
 
 ## Usage
 
@@ -49,7 +49,7 @@ Future<void> onBound() async {
 ### Auto-Cancelable Subscriptions
 
 ```dart
-final subscriptionController = autoCancelableStream(
+final streamSubscription = autoCancelableStream(
  _contactRepository.subscribeForChanges(),
 ).listen(_onGetsContacts);
 ```
