@@ -1,3 +1,6 @@
+## [1.0.2]
+* remove 'cupertino' import
+
 ## [1.0.1]
 * update documentation
 
