@@ -5,11 +5,11 @@ It introduces utilities for managing asynchronous operations and subscriptions w
 
 ## Features
 
-- **Auto-Cancelable Function**: Create functions that are automatically canceled when the associated `Bloc` is closed. If the future is canceled, it throws an exception.
+- **Auto-Cancelable Future**: Create async functions that are automatically canceled when the associated `Bloc` is closed. If the future is canceled, it throws an exception.
 
-- **Auto-Cancelable Subscriptions**: Create subscriptions that are automatically canceled when the associated `Bloc` is closed.
+- **Auto-Cancelable Stream**: Create streams that produces subscriptions that are automatically canceled when the associated `Bloc` is closed.
 
-- **Silent Auto-Cancelable Function**: Create functions that are automatically canceled when the associated `Bloc` is closed. If the future is canceled, it does not complete, and no exception is thrown.
+- **Silent Auto-Cancelable Future**: Create async functions that are automatically canceled when the associated `Bloc` is closed. If the future is canceled, it does not complete, and no exception is thrown.
 
 ## Usage
 
@@ -21,32 +21,32 @@ class MyCubit extends Cubit<MyState> with AsyncBlocScope {
 }
 ```
 
-### Auto-Cancelable/Silent Auto-Cancelable Functions
+### Auto-Cancelable/Silent Auto-Cancelable Future
 
 ```dart
 Future<void> onBound() async {
   try {
-    final result = await autoCancelableFunction(() async {
+    final result = await autoCancelableFuture(() async {
       // Your asynchronous logic here
       return someValue;
     });
 
 
     // The result is available here
-  } on FunctionExecutionInterrupted catch (e) {
+  } on FutureExecutionInterrupted catch (e) {
     // Handle the exception thrown on cancellation
   }
 }
 
 Future<void> onBound() async {
-  final result = await silentAutoCancelableFunction(() async {
+  final result = await silentAutoCancelableFuture(() async {
     // Your asynchronous logic here
     return someValue;
   });
 }
 ```
 
-**Note:** In case of `silentAutoCancelableFunction` future will not be completed in case of cancellation.
+**Note:** In case of `silentAutoCancelableFuture` future will be completed in case of cancellation but the result will be ignored.
 
 ### Auto-Cancelable Subscriptions
 
@@ -58,5 +58,5 @@ final subscriptionController = autoCancelableStream(
 
 ### Error Handling
 
-Error handling using local zone is available when using `autoCancelableFunction` / `silentAutoCancelableFunction`.
+Error handling using local zone is available when using `autoCancelableFuture` / `silentAutoCancelableFuture`.
 Override the `onUnhandledError` method to handle unhandled errors related to auto-cancelable functions.
