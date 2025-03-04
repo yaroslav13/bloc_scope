@@ -4,7 +4,6 @@ import 'package:async/async.dart';
 import 'package:bloc/bloc.dart';
 import 'package:bloc_scope/bloc_scope.dart';
 import 'package:bloc_scope/src/future_execution_interrupted.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 
 part 'operation_execution_result.dart';
