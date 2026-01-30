@@ -24,10 +24,9 @@ void main() {
       final cubit = TestCubit();
       
       // Create a stream
-      final stream1 = cubit.autoCancelableStream(
-        Stream.fromIterable([1, 2, 3]),
-      );
-      stream1.listen((_) {});
+      final stream1 = cubit
+          .autoCancelableStream(Stream.fromIterable([1, 2, 3]))
+          ..listen((_) {});
       
       // Close the cubit
       await cubit.close();
@@ -156,7 +155,7 @@ void main() {
       final cubit = TestCubit();
       
       // Start a silent future - don't await it yet
-      final firstFuture = cubit.silentAutoCancelableFuture(() async {
+      cubit.silentAutoCancelableFuture(() async {
         await Future<void>.delayed(const Duration(milliseconds: 100));
       });
       
