@@ -16,6 +16,7 @@ typedef AutoCancelableStream<T> = _SubscriptionHookStream<T>;
 mixin AsyncBlocScope<State> on BlocBase<State> {
   final Set<StreamSubscription<dynamic>> _subscriptions = {};
   final Set<CancelableOperation<dynamic>> _cancelableOperations = {};
+  bool _isClosed = false;
 
   /// [silentAutoCancelableFuture] or [autoCancelableFuture] runs safely
   /// in a zone that catches unhandled errors.
@@ -39,6 +40,9 @@ mixin AsyncBlocScope<State> on BlocBase<State> {
   AutoCancelableStream<S> autoCancelableStream<S>(
     Stream<S> stream,
   ) {
+    if (_isClosed) {
+      throw StateError('Cannot create stream after scope is closed');
+    }
     return _SubscriptionHookStream<S>(
       stream,
       onSubscriptionCreated: _subscriptions.add,
@@ -75,13 +79,14 @@ mixin AsyncBlocScope<State> on BlocBase<State> {
   /// Close all subscriptions and cancel all cancelable operations.
   @override
   Future<void> close() async {
-    for (final subscription in _subscriptions) {
-      await subscription.cancel();
-    }
+    // Set the closed flag immediately to prevent new operations
+    _isClosed = true;
 
-    for (final cancellableOperation in _cancelableOperations) {
-      await cancellableOperation.cancel();
-    }
+    // Cancel all subscriptions and operations in parallel
+    await Future.wait([
+      ...(_subscriptions.map((s) => s.cancel())),
+      ...(_cancelableOperations.map((op) => op.cancel())),
+    ]);
 
     _subscriptions.clear();
     _cancelableOperations.clear();
@@ -93,6 +98,10 @@ mixin AsyncBlocScope<State> on BlocBase<State> {
     Future<T> Function() function, {
     bool ignoreCanceledFuture = false,
   }) async {
+    if (_isClosed) {
+      throw StateError('Cannot execute future after scope is closed');
+    }
+
     final completer = CancelableCompleter<_OperationExecutionResult>();
 
     final completerCancelableOperation = completer.operation;
